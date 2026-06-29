@@ -333,3 +333,38 @@
   .room-content { padding: 20px 24px; max-width: 680px; margin: 0 auto; }
   .prediction-list { gap: 12px; }
 }
+
+.result-vote {
+  margin-top: 8px;
+}
+
+.result-vote-label {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.result-vote-label--none {
+  color: var(--text-muted);
+}
+
+.result-predicted-score {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.result-score-bonus {
+  margin-top: 3px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.result-badge-points {
+  display: inline-block;
+  margin-left: 6px;
+  color: inherit;
+  font-weight: 900;
+}
+

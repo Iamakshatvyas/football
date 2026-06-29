@@ -321,7 +321,7 @@ function RecentResults({ roomId, currentUserId, predictions }) {
         const fid        = fixture.fixture?.id;
         const homeGoals  = fixture.goals?.home ?? 0;
         const awayGoals  = fixture.goals?.away ?? 0;
-        const outcome    = homeGoals > awayGoals ? 'home' : 'away';
+        const outcome    = homeGoals > awayGoals ? 'home' : awayGoals > homeGoals ? 'away' : 'draw';
         const homeName   = fixture.teams?.home?.name;
         const awayName   = fixture.teams?.away?.name;
         const myPred = predictions[fid];
@@ -335,8 +335,8 @@ function RecentResults({ roomId, currentUserId, predictions }) {
 
         const scoreCorrect =
           winnerCorrect &&
-          myPred?.homeGoals === homeGoals &&
-          myPred?.awayGoals === awayGoals;
+          Number(myPred?.homeGoals) === homeGoals &&
+          Number(myPred?.awayGoals) === awayGoals;
 
         const earnedPoints =
           winnerCorrect

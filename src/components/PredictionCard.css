@@ -7,9 +7,10 @@
   border: 0.5px solid var(--border-default);
   border-radius: var(--radius-lg);
   padding: 14px;
-  transition: border-color var(--dur-base) var(--ease-out),
-              background var(--dur-base) var(--ease-out),
-              transform var(--dur-fast) var(--ease-out);
+  transition:
+    border-color var(--dur-base) var(--ease-out),
+    background var(--dur-base) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
 }
 
 .pred-card:hover {
@@ -18,35 +19,19 @@
 
 .pred-card--predicted {
   border-color: var(--border-accent);
-  background: linear-gradient(135deg, var(--bg-elevated) 60%, rgba(255,90,0,0.04) 100%);
+  background: linear-gradient(135deg, var(--bg-elevated) 60%, rgba(255, 90, 0, 0.04) 100%);
 }
 
 .pred-card--locked {
   opacity: 0.7;
 }
 
-/* ── Header ─────────────────────────────────────────── */
 .pred-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   margin-bottom: 12px;
-}
-
-.pred-comp {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text-accent);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-.pred-comp-logo {
-  object-fit: contain;
-  opacity: 0.8;
 }
 
 .pred-header-right {
@@ -61,10 +46,33 @@
   font-weight: 500;
 }
 
-/* Saving pulse dot */
+.badge {
+  border: 0.5px solid var(--border-default);
+  border-radius: var(--radius-pill);
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.badge-muted {
+  color: var(--text-muted);
+  background: var(--bg-glass);
+}
+
+.badge-success {
+  color: var(--color-success);
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.25);
+}
+
 @keyframes savingPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
 }
 
 .pred-saving-dot {
@@ -75,31 +83,64 @@
   animation: savingPulse 0.8s ease-in-out infinite;
 }
 
-/* ── Teams row ──────────────────────────────────────── */
-.pred-teams {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.pred-teams-selector {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  align-items: stretch;
   gap: 8px;
-  margin-bottom: 12px;
 }
 
-.pred-team {
+.pred-team-card {
+  position: relative;
+  min-width: 0;
+  min-height: 118px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
-  flex: 1;
-  min-width: 0;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 8px;
+  border: 0.5px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+  color: var(--text-secondary);
+  cursor: pointer;
+  outline: none;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-spring);
+  -webkit-tap-highlight-color: transparent;
 }
 
-.pred-team--right { align-items: center; }
+.pred-team-card:hover:not(:disabled) {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glass);
+  color: var(--text-primary);
+}
+
+.pred-team-card:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.pred-team-card--selected {
+  background: rgba(255, 90, 0, 0.15);
+  border-color: rgba(255, 90, 0, 0.55);
+  color: var(--text-accent);
+  box-shadow: inset 0 0 0 0.5px rgba(255, 90, 0, 0.3);
+}
+
+.pred-team-card--disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
 
 .pred-team-logo {
-  width: 40px;
-  height: 40px;
+  width: 52px;
+  height: 52px;
   object-fit: contain;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
 }
 
 .pred-team-fallback {
@@ -110,134 +151,254 @@
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.pred-team-name {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-align: center;
-  max-width: 80px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.pred-centre {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  flex-shrink: 0;
-  min-width: 64px;
-}
-
-.pred-vs {
-  font-size: 11px;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.15);
-  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.65);
 }
 
-.pred-hint {
-  font-size: 9px;
-  color: var(--text-muted);
-  font-weight: 500;
-  letter-spacing: 0.3px;
-}
-
-.pred-selected-label {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--text-accent);
-  letter-spacing: 0.3px;
-  text-align: center;
-  max-width: 64px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* ── Prediction buttons ─────────────────────────────── */
-.pred-buttons {
-  display: flex;
-  gap: 6px;
-}
-
-.pred-btn {
-  flex: 1;
-  padding: 9px 4px;
-  border-radius: var(--radius-md);
-  border: 0.5px solid var(--border-strong);
-  background: var(--bg-glass);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition:
-    background var(--dur-fast) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out),
-    color var(--dur-fast) var(--ease-out),
-    transform var(--dur-fast) var(--ease-spring);
-  text-align: center;
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
+.pred-team-card-name {
+  width: 100%;
+  min-height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 36px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
-.pred-btn:hover:not(:disabled) {
-  background: var(--bg-glass-hover);
-  border-color: var(--border-glass);
+.pred-team-card-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-orange);
+  color: #111;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.pred-vs-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pred-vs-text {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bg-base);
+  border: 0.5px solid var(--border-default);
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.pred-score-section {
+  margin-top: 12px;
+  padding: 12px;
+  border: 0.5px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.pred-score-label {
+  margin-bottom: 10px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.pred-score-inputs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.pred-score-group {
+  min-width: 0;
+}
+
+.pred-score-team-label {
+  min-height: 26px;
+  margin-bottom: 6px;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.pred-score-control {
+  display: grid;
+  grid-template-columns: 32px minmax(42px, 1fr) 32px;
+  align-items: center;
+  gap: 6px;
+}
+
+.pred-score-btn {
+  width: 32px;
+  height: 32px;
+  border: 0.5px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
   color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-spring);
 }
 
-.pred-btn:active:not(:disabled) {
-  transform: scale(0.96);
+.pred-score-btn:hover:not(:disabled) {
+  background: var(--bg-glass-hover);
 }
 
-.pred-btn:disabled {
+.pred-score-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.pred-score-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.pred-score-display {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0.5px solid rgba(255, 90, 0, 0.35);
+  border-radius: var(--radius-md);
+  background: rgba(255, 90, 0, 0.08);
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.pred-score-warning {
+  margin-top: 8px;
+  color: var(--color-danger);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.pred-scoring-info {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 0.5px solid var(--border-default);
+}
+
+.pred-scoring-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pred-scoring-label {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.pred-scoring-points {
+  color: var(--text-accent);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.pred-save-btn {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 12px;
+  border: 0.5px solid rgba(255, 90, 0, 0.55);
+  border-radius: var(--radius-md);
+  background: var(--color-orange);
+  color: #111;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-spring);
+}
+
+.pred-save-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.pred-save-btn:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
 
-.pred-btn--selected {
-  background: rgba(255, 90, 0, 0.15) !important;
-  border-color: rgba(255, 90, 0, 0.55) !important;
-  color: var(--text-accent) !important;
-  box-shadow: inset 0 0 0 0.5px rgba(255, 90, 0, 0.3);
+.pred-save-btn--saved {
+  background: rgba(34, 197, 94, 0.9);
+  border-color: rgba(34, 197, 94, 0.95);
 }
 
-.pred-btn--unselected {
-  opacity: 0.45;
-}
-
-.pred-btn-label {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
-}
-
-/* Spinner inside button while saving */
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.pred-btn-spinner {
+.pred-save-spinner {
   display: inline-block;
-  width: 12px;
-  height: 12px;
-  border: 1.5px solid rgba(255, 149, 0, 0.3);
-  border-top-color: var(--color-orange);
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 0, 0, 0.25);
+  border-top-color: #111;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
+}
+
+@media (max-width: 420px) {
+  .pred-card {
+    padding: 12px;
+  }
+
+  .pred-teams-selector {
+    grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .pred-team-card {
+    min-height: 112px;
+    padding: 10px 6px;
+  }
+
+  .pred-score-section {
+    padding: 10px;
+  }
+
+  .pred-score-control {
+    grid-template-columns: 30px minmax(36px, 1fr) 30px;
+    gap: 5px;
+  }
+
+  .pred-score-btn {
+    width: 30px;
+    height: 30px;
+  }
 }

@@ -1,27 +1,30 @@
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
-import { db } from './firebase';
-import { getRecentResults } from './matchService';
+import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
+import { db } from "./firebase";
+import { getRecentResults } from "./matchService";
 
 const getMemberId = (member) => member?.uid || member?.userId || member?.id;
 
 const getDisplayName = (member, userId) =>
-  member?.displayName || member?.name || member?.email || userId || 'Unknown User';
+  member?.displayName || member?.name || member?.email || userId || "Unknown User";
 
 const toNumber = (value) => {
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
 };
 
-const getFixtureId = (match) => match?.fixtureId ?? match?.id ?? match?.matchId;
+const getFixtureId = (match) =>
+  match?.fixture?.id ?? match?.fixtureId ?? match?.id ?? match?.matchId;
 
 const getFinishedScore = (match) => {
   const homeGoals =
+    match?.goals?.home ??
     match?.homeGoals ??
     match?.score?.fullTime?.home ??
     match?.score?.regularTime?.home ??
     match?.score?.home;
 
   const awayGoals =
+    match?.goals?.away ??
     match?.awayGoals ??
     match?.score?.fullTime?.away ??
     match?.score?.regularTime?.away ??
@@ -41,13 +44,15 @@ const getFinishedScore = (match) => {
 };
 
 const getActualWinner = ({ homeGoals, awayGoals }) => {
-  if (homeGoals > awayGoals) return 'home';
-  if (awayGoals > homeGoals) return 'away';
-  return 'draw';
+  if (homeGoals > awayGoals) return "home";
+  if (awayGoals > homeGoals) return "away";
+  return "draw";
 };
 
 const isFinishedMatch = (match) => {
-  if (match?.status && match.status !== 'FINISHED') {
+  const status = match?.fixture?.status?.short ?? match?.status;
+
+  if (status && !["FT", "FINISHED"].includes(status)) {
     return false;
   }
 
@@ -84,8 +89,8 @@ export const getRoomLeaderboard = async (roomId) => {
   }
 
   const [predictionsSnap, roomSnap, finishedMatches] = await Promise.all([
-    getDocs(query(collection(db, 'predictions'), where('roomId', '==', roomId))),
-    getDoc(doc(db, 'rooms', roomId)),
+    getDocs(query(collection(db, "predictions"), where("roomId", "==", roomId))),
+    getDoc(doc(db, "rooms", roomId)),
     getRecentResults(),
   ]);
 
@@ -108,7 +113,7 @@ export const getRoomLeaderboard = async (roomId) => {
   });
 
   const finishedMatchMap = buildFinishedMatchMap(
-    Array.isArray(finishedMatches) ? finishedMatches : [],
+    Array.isArray(finishedMatches) ? finishedMatches : []
   );
 
   predictionsSnap.docs.forEach((predictionDoc) => {
@@ -130,15 +135,12 @@ export const getRoomLeaderboard = async (roomId) => {
       return;
     }
 
-    const predictedHomeGoals = toNumber(prediction.predictedHomeGoals);
-    const predictedAwayGoals = toNumber(prediction.predictedAwayGoals);
-
     statsByUserId[userId].totalPredictions += 1;
 
     const actualWinner = getActualWinner(match);
     const predictedWinner = prediction.prediction;
     const hasCorrectWinner =
-      (predictedWinner === 'home' || predictedWinner === 'away') &&
+      (predictedWinner === "home" || predictedWinner === "away") &&
       predictedWinner === actualWinner;
 
     if (!hasCorrectWinner) {
@@ -148,6 +150,8 @@ export const getRoomLeaderboard = async (roomId) => {
     statsByUserId[userId].correctPredictions += 1;
     statsByUserId[userId].points += 1;
 
+    const predictedHomeGoals = toNumber(prediction.predictedHomeGoals);
+    const predictedAwayGoals = toNumber(prediction.predictedAwayGoals);
     const hasExactScore =
       predictedHomeGoals === match.homeGoals && predictedAwayGoals === match.awayGoals;
 
