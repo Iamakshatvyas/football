@@ -3,35 +3,33 @@
    ===================================================== */
 
 .pred-card {
-  background: var(--bg-elevated);
-  border: 0.5px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  padding: 14px;
-  transition:
-    border-color var(--dur-base) var(--ease-out),
-    background var(--dur-base) var(--ease-out),
-    transform var(--dur-fast) var(--ease-out);
-}
-
-.pred-card:hover {
-  background: var(--bg-surface);
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 90, 0, 0.12), transparent 34%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025)),
+    #101116;
+  border: 0.5px solid rgba(255, 255, 255, 0.11);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.36);
 }
 
 .pred-card--predicted {
-  border-color: var(--border-accent);
-  background: linear-gradient(135deg, var(--bg-elevated) 60%, rgba(255, 90, 0, 0.04) 100%);
+  border-color: rgba(255, 149, 0, 0.45);
 }
 
 .pred-card--locked {
-  opacity: 0.7;
+  opacity: 0.72;
 }
 
 .pred-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .pred-header-right {
@@ -41,28 +39,28 @@
 }
 
 .pred-deadline {
-  font-size: 10px;
-  color: var(--text-muted);
-  font-weight: 500;
+  color: rgba(255, 255, 255, 0.46);
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .badge {
-  border: 0.5px solid var(--border-default);
   border-radius: var(--radius-pill);
-  padding: 2px 8px;
+  padding: 4px 9px;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 900;
 }
 
 .badge-muted {
-  color: var(--text-muted);
-  background: var(--bg-glass);
+  color: rgba(255, 255, 255, 0.48);
+  background: rgba(255, 255, 255, 0.06);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
 }
 
 .badge-success {
-  color: var(--color-success);
+  color: #35df78;
   background: rgba(34, 197, 94, 0.12);
-  border-color: rgba(34, 197, 94, 0.25);
+  border: 0.5px solid rgba(34, 197, 94, 0.28);
 }
 
 @keyframes savingPulse {
@@ -71,13 +69,13 @@
     opacity: 1;
   }
   50% {
-    opacity: 0.3;
+    opacity: 0.32;
   }
 }
 
 .pred-saving-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--color-orange);
   animation: savingPulse 0.8s ease-in-out infinite;
@@ -85,104 +83,108 @@
 
 .pred-teams-selector {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 42px minmax(0, 1fr);
   align-items: stretch;
-  gap: 8px;
+  gap: 10px;
 }
 
 .pred-team-card {
   position: relative;
   min-width: 0;
-  min-height: 118px;
+  min-height: 138px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 12px 8px;
-  border: 0.5px solid var(--border-strong);
-  border-radius: var(--radius-md);
-  background: var(--bg-glass);
-  color: var(--text-secondary);
+  padding: 14px 10px;
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.045);
+  color: rgba(255, 255, 255, 0.76);
   cursor: pointer;
   outline: none;
   transition:
     background var(--dur-fast) var(--ease-out),
     border-color var(--dur-fast) var(--ease-out),
-    color var(--dur-fast) var(--ease-out),
     transform var(--dur-fast) var(--ease-spring);
   -webkit-tap-highlight-color: transparent;
 }
 
 .pred-team-card:hover:not(:disabled) {
-  background: var(--bg-glass-hover);
-  border-color: var(--border-glass);
-  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.075);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .pred-team-card:active:not(:disabled) {
   transform: scale(0.98);
 }
 
-.pred-team-card--selected {
-  background: rgba(255, 90, 0, 0.15);
-  border-color: rgba(255, 90, 0, 0.55);
-  color: var(--text-accent);
-  box-shadow: inset 0 0 0 0.5px rgba(255, 90, 0, 0.3);
-}
-
-.pred-team-card--disabled {
+.pred-team-card:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 0.6;
 }
 
-.pred-team-logo {
-  width: 52px;
-  height: 52px;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+.pred-team-card--selected {
+  background: linear-gradient(180deg, rgba(255, 149, 0, 0.18), rgba(255, 90, 0, 0.08));
+  border-color: rgba(255, 149, 0, 0.58);
+  box-shadow: inset 0 0 0 0.5px rgba(255, 149, 0, 0.25);
 }
 
-.pred-team-fallback {
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+.pred-logo-shell {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.65);
+  border-radius: 13px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)),
+    rgba(8, 10, 14, 0.75);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+}
+
+.pred-team-logo {
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.42));
+}
+
+.pred-team-fallback {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+  font-weight: 900;
 }
 
 .pred-team-card-name {
   width: 100%;
-  min-height: 28px;
+  min-height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: inherit;
+  color: rgba(255, 255, 255, 0.92);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 900;
   line-height: 1.2;
   text-align: center;
   overflow-wrap: anywhere;
+}
+
+.pred-team-card-meta {
+  color: rgba(255, 255, 255, 0.38);
+  font-size: 10px;
+  font-weight: 800;
 }
 
 .pred-team-card-check {
   position: absolute;
   top: 8px;
   right: 8px;
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
+  border-radius: 999px;
+  padding: 2px 6px;
   background: var(--color-orange);
   color: #111;
-  font-size: 12px;
-  font-weight: 900;
+  font-size: 9px;
+  font-weight: 1000;
 }
 
 .pred-vs-divider {
@@ -192,41 +194,54 @@
 }
 
 .pred-vs-text {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: var(--bg-base);
-  border: 0.5px solid var(--border-default);
-  color: rgba(255, 255, 255, 0.25);
+  background: #0b0c10;
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.32);
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 1000;
   letter-spacing: 1px;
 }
 
 .pred-score-section {
-  margin-top: 12px;
-  padding: 12px;
-  border: 0.5px solid var(--border-default);
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.03);
+  margin-top: 14px;
+  padding: 14px;
+  border: 0.5px solid rgba(255, 255, 255, 0.11);
+  border-radius: 14px;
+  background: rgba(5, 7, 12, 0.52);
+}
+
+.pred-score-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .pred-score-label {
-  margin-bottom: 10px;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.56);
   font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.3px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
+}
+
+.pred-score-preview {
+  color: var(--text-accent);
+  font-size: 17px;
+  font-weight: 1000;
 }
 
 .pred-score-inputs {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
 .pred-score-group {
@@ -234,11 +249,11 @@
 }
 
 .pred-score-team-label {
-  min-height: 26px;
-  margin-bottom: 6px;
-  color: var(--text-muted);
+  min-height: 28px;
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.46);
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 800;
   line-height: 1.25;
   text-align: center;
   overflow-wrap: anywhere;
@@ -246,115 +261,99 @@
 
 .pred-score-control {
   display: grid;
-  grid-template-columns: 32px minmax(42px, 1fr) 32px;
+  grid-template-columns: 36px minmax(44px, 1fr) 36px;
   align-items: center;
   gap: 6px;
 }
 
 .pred-score-btn {
-  width: 32px;
-  height: 32px;
-  border: 0.5px solid var(--border-strong);
-  border-radius: var(--radius-md);
-  background: var(--bg-glass);
-  color: var(--text-primary);
+  width: 36px;
+  height: 36px;
+  border: 0.5px solid rgba(255, 255, 255, 0.14);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.92);
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 1000;
   cursor: pointer;
-  transition:
-    background var(--dur-fast) var(--ease-out),
-    transform var(--dur-fast) var(--ease-spring);
 }
 
 .pred-score-btn:hover:not(:disabled) {
-  background: var(--bg-glass-hover);
-}
-
-.pred-score-btn:active:not(:disabled) {
-  transform: scale(0.94);
+  background: rgba(255, 149, 0, 0.16);
+  border-color: rgba(255, 149, 0, 0.34);
 }
 
 .pred-score-btn:disabled {
   cursor: not-allowed;
-  opacity: 0.4;
+  opacity: 0.38;
 }
 
 .pred-score-display {
-  height: 38px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 0.5px solid rgba(255, 90, 0, 0.35);
-  border-radius: var(--radius-md);
-  background: rgba(255, 90, 0, 0.08);
-  color: var(--text-primary);
-  font-size: 20px;
-  font-weight: 900;
+  border: 0.5px solid rgba(255, 149, 0, 0.34);
+  border-radius: 12px;
+  background: rgba(255, 149, 0, 0.08);
+  color: #fff;
+  font-size: 22px;
+  font-weight: 1000;
 }
 
 .pred-score-warning {
-  margin-top: 8px;
-  color: var(--color-danger);
+  margin-top: 10px;
+  color: #ff6b6b;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 800;
   text-align: center;
 }
 
-.pred-scoring-info {
-  display: grid;
-  gap: 6px;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 0.5px solid var(--border-default);
-}
-
-.pred-scoring-row {
+.pred-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
+  margin-top: 14px;
 }
 
-.pred-scoring-label {
-  color: var(--text-muted);
-  font-size: 11px;
-  font-weight: 600;
+.pred-scoring-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
 }
 
-.pred-scoring-points {
-  color: var(--text-accent);
-  font-size: 11px;
+.pred-scoring-info span {
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.055);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 10px;
   font-weight: 800;
 }
 
 .pred-save-btn {
-  width: 100%;
-  min-height: 40px;
-  margin-top: 12px;
-  border: 0.5px solid rgba(255, 90, 0, 0.55);
-  border-radius: var(--radius-md);
-  background: var(--color-orange);
+  min-width: 92px;
+  height: 40px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff9500, #ff5a00);
   color: #111;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 1000;
   cursor: pointer;
-  transition:
-    opacity var(--dur-fast) var(--ease-out),
-    transform var(--dur-fast) var(--ease-spring);
-}
-
-.pred-save-btn:active:not(:disabled) {
-  transform: scale(0.98);
+  box-shadow: 0 10px 28px rgba(255, 90, 0, 0.24);
 }
 
 .pred-save-btn:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 0.5;
+  box-shadow: none;
 }
 
 .pred-save-btn--saved {
-  background: rgba(34, 197, 94, 0.9);
-  border-color: rgba(34, 197, 94, 0.95);
+  background: linear-gradient(135deg, #35df78, #22c55e);
 }
 
 @keyframes spin {
@@ -373,32 +372,40 @@
   animation: spin 0.6s linear infinite;
 }
 
-@media (max-width: 420px) {
+@media (max-width: 520px) {
   .pred-card {
-    padding: 12px;
+    padding: 13px;
   }
 
   .pred-teams-selector {
     grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr);
-    gap: 6px;
+    gap: 7px;
   }
 
   .pred-team-card {
-    min-height: 112px;
-    padding: 10px 6px;
+    min-height: 130px;
+    padding: 12px 7px;
   }
 
   .pred-score-section {
-    padding: 10px;
+    padding: 12px;
   }
 
   .pred-score-control {
-    grid-template-columns: 30px minmax(36px, 1fr) 30px;
-    gap: 5px;
+    grid-template-columns: 32px minmax(38px, 1fr) 32px;
   }
 
   .pred-score-btn {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 34px;
+  }
+
+  .pred-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pred-save-btn {
+    width: 100%;
   }
 }

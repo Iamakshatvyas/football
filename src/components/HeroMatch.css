@@ -4,15 +4,16 @@
 
 .hero-root {
   position: relative;
-  min-height: 210px;
+  min-height: 300px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 0 16px 14px;
+  padding: 18px 20px 22px;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.04);
 }
 
-/* ── Background layers ──────────────────────────────── */
 .hero-bg {
   position: absolute;
   inset: 0;
@@ -22,39 +23,49 @@
 .hero-bg-base {
   position: absolute;
   inset: 0;
-  background: linear-gradient(155deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 90, 0, 0.18), transparent 28%),
+    radial-gradient(circle at 82% 18%, rgba(59, 130, 246, 0.24), transparent 30%),
+    linear-gradient(145deg, #12131f 0%, #0a0b10 52%, #111827 100%);
 }
 
 .hero-bg-glow {
   position: absolute;
-  width: 220px;
-  height: 220px;
+  width: 280px;
+  height: 280px;
   border-radius: 50%;
-  filter: blur(60px);
+  filter: blur(70px);
   pointer-events: none;
 }
 
 .hero-bg-glow--left {
-  bottom: -60px;
-  left: -40px;
-  background: rgba(255, 90, 0, 0.18);
+  bottom: -100px;
+  left: -80px;
+  background: rgba(255, 90, 0, 0.2);
 }
 
 .hero-bg-glow--right {
-  top: -60px;
-  right: -40px;
-  background: rgba(59, 130, 246, 0.12);
+  top: -90px;
+  right: -70px;
+  background: rgba(37, 99, 235, 0.2);
 }
 
 @keyframes heroPulse {
-  0%, 100% { opacity: 0.06; transform: scale(1); }
-  50% { opacity: 0.12; transform: scale(1.05); }
+  0%,
+  100% {
+    opacity: 0.06;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.14;
+    transform: scale(1.05);
+  }
 }
 
 .hero-bg-pulse {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, rgba(255,59,59,0.15) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(255, 59, 59, 0.2) 0%, transparent 68%);
   animation: heroPulse 3s ease-in-out infinite;
 }
 
@@ -63,143 +74,144 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 50px;
+  height: 88px;
   background: linear-gradient(to bottom, transparent, var(--bg-base));
   z-index: 1;
   pointer-events: none;
 }
 
-/* ── Content layers (above bg) ──────────────────────── */
 .hero-header,
 .hero-match,
+.hero-details,
 .hero-competition,
 .hero-empty {
   position: relative;
   z-index: 2;
 }
 
-/* ── Header ─────────────────────────────────────────── */
 .hero-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 14px;
-  margin-bottom: 16px;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .hero-room-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  min-width: 0;
 }
 
 .hero-room-name {
-  font-size: 14px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
-  letter-spacing: -0.2px;
+  font-size: 15px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.94);
 }
 
 .hero-member-count {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.4);
-  font-weight: 500;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 600;
 }
 
-/* ── Match layout ───────────────────────────────────── */
 .hero-match {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(100px, 0.45fr) minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 14px;
+  margin-bottom: 18px;
 }
 
-/* ── Team block ─────────────────────────────────────── */
 .hero-team {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  flex: 1;
+  gap: 10px;
   min-width: 0;
 }
 
-.hero-team-logo {
-  width: 56px;
-  height: 56px;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
-}
-
-.hero-team-fallback {
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1.5px solid rgba(255, 255, 255, 0.15);
+.hero-logo-shell {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.7);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)),
+    rgba(7, 9, 14, 0.7);
+  border: 0.5px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.42);
+}
+
+.hero-team-logo {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
+}
+
+.hero-team-fallback {
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 0.5px solid rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .hero-team-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
+  width: 100%;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.25;
   text-align: center;
-  max-width: 90px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 
-/* ── Centre column ──────────────────────────────────── */
 .hero-centre {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-  min-width: 80px;
+  gap: 8px;
+  min-width: 0;
 }
 
-/* Score */
 .hero-score {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
 .hero-score-num {
-  font-size: 38px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 46px;
+  font-weight: 900;
   line-height: 1;
-  letter-spacing: -1px;
-  transition: color var(--dur-base) var(--ease-out);
 }
 
 .hero-score-num--winning {
-  color: #ffffff;
-  text-shadow: 0 0 20px rgba(255, 149, 0, 0.5);
+  color: #fff;
+  text-shadow: 0 0 24px rgba(255, 149, 0, 0.45);
 }
 
 .hero-score-sep {
-  font-size: 28px;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.35);
-  margin-top: -4px;
+  color: rgba(255, 255, 255, 0.34);
+  font-size: 30px;
+  font-weight: 500;
+  margin-top: -5px;
 }
 
-/* Status */
-.hero-status {
-  font-size: 11px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.5);
-  letter-spacing: 0.5px;
+.hero-status,
+.hero-vs {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1px;
   text-transform: uppercase;
 }
 
@@ -207,89 +219,163 @@
   color: var(--color-live);
 }
 
-/* VS badge */
 .hero-vs {
-  font-size: 16px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.2);
-  letter-spacing: 2px;
+  font-size: 18px;
 }
 
-/* Countdown */
 .hero-countdown {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
 }
 
 .hero-countdown-label {
+  color: rgba(255, 255, 255, 0.36);
   font-size: 9px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.35);
-  text-transform: uppercase;
+  font-weight: 800;
   letter-spacing: 0.8px;
+  text-transform: uppercase;
 }
 
 .hero-countdown-time {
-  font-size: 15px;
-  font-weight: 800;
   color: var(--text-accent);
-  letter-spacing: -0.3px;
+  font-size: 16px;
+  font-weight: 900;
 }
 
-/* ── Competition row ────────────────────────────────── */
+.hero-details {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 0.45fr);
+  gap: 10px;
+  max-width: 560px;
+  width: 100%;
+  margin: 0 auto 12px;
+}
+
+.hero-detail {
+  min-width: 0;
+  padding: 10px 12px;
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  background: rgba(5, 7, 12, 0.42);
+  backdrop-filter: blur(14px);
+}
+
+.hero-detail-label {
+  display: block;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+}
+
+.hero-detail-value {
+  display: block;
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 13px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hero-detail--score .hero-detail-value {
+  color: var(--text-accent);
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+
 .hero-competition {
   display: flex;
   align-items: center;
-  gap: 5px;
-  margin-bottom: 2px;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.44);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .hero-comp-logo {
   width: 14px;
   height: 14px;
   object-fit: contain;
-  opacity: 0.7;
+  opacity: 0.76;
 }
 
-.hero-comp-name {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.45);
-  font-weight: 500;
-}
-
-.hero-comp-round,
-.hero-comp-time {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.3);
-}
-
-/* ── Empty hero ─────────────────────────────────────── */
 .hero-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px 0 24px;
+  padding: 42px 0 32px;
   gap: 8px;
 }
 
 .hero-empty-icon {
   font-size: 36px;
-  opacity: 0.3;
+  opacity: 0.45;
 }
 
 .hero-empty-text {
+  color: rgba(255, 255, 255, 0.42);
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.3);
-  font-weight: 500;
+  font-weight: 700;
 }
 
-/* ── Responsive ─────────────────────────────────────── */
-@media (min-width: 480px) {
-  .hero-root { min-height: 230px; }
-  .hero-team-logo { width: 64px; height: 64px; }
-  .hero-score-num { font-size: 44px; }
-  .hero-team-name { font-size: 13px; }
+@media (min-width: 768px) {
+  .hero-root {
+    min-height: 340px;
+    padding-inline: 42px;
+  }
+
+  .hero-match {
+    max-width: 880px;
+    width: 100%;
+    margin-inline: auto;
+  }
+
+  .hero-logo-shell,
+  .hero-team-fallback {
+    width: 78px !important;
+    height: 78px !important;
+  }
+
+  .hero-score-num {
+    font-size: 54px;
+  }
+
+  .hero-team-name {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 520px) {
+  .hero-root {
+    min-height: 292px;
+    padding-inline: 14px;
+  }
+
+  .hero-match {
+    grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .hero-logo-shell,
+  .hero-team-fallback {
+    width: 58px !important;
+    height: 58px !important;
+    border-radius: 14px;
+  }
+
+  .hero-score-num {
+    font-size: 38px;
+  }
+
+  .hero-details {
+    grid-template-columns: 1fr 96px;
+  }
 }

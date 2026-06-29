@@ -7,19 +7,13 @@ function formatKickoff(dateStr) {
   const date = new Date(dateStr);
   const now = new Date();
   const tomorrow = new Date(now.getTime() + 86400000);
-
   const time = date.toLocaleTimeString("en-GB", {
     hour: "2-digit",
     minute: "2-digit",
   });
 
-  if (date.toDateString() === now.toDateString()) {
-    return `Today - ${time}`;
-  }
-
-  if (date.toDateString() === tomorrow.toDateString()) {
-    return `Tomorrow - ${time}`;
-  }
+  if (date.toDateString() === now.toDateString()) return `Today - ${time}`;
+  if (date.toDateString() === tomorrow.toDateString()) return `Tomorrow - ${time}`;
 
   return `${date.toLocaleDateString("en-GB", {
     weekday: "short",
@@ -28,9 +22,8 @@ function formatKickoff(dateStr) {
   })} - ${time}`;
 }
 
-function TeamLogo({ team, size = 48 }) {
+function TeamLogo({ team, size = 52 }) {
   const [error, setError] = useState(false);
-
   const initials = team?.name
     ? team.name
         .split(" ")
@@ -42,21 +35,23 @@ function TeamLogo({ team, size = 48 }) {
 
   if (!team?.logo || error) {
     return (
-      <div className="pred-team-fallback" style={{ width: size, height: size }}>
-        {initials}
-      </div>
+      <span className="pred-logo-shell" style={{ width: size, height: size }}>
+        <span className="pred-team-fallback">{initials}</span>
+      </span>
     );
   }
 
   return (
-    <img
-      src={team.logo}
-      alt={team.name}
-      width={size}
-      height={size}
-      className="pred-team-logo"
-      onError={() => setError(true)}
-    />
+    <span className="pred-logo-shell" style={{ width: size, height: size }}>
+      <img
+        src={team.logo}
+        alt={team.name}
+        width={size}
+        height={size}
+        className="pred-team-logo"
+        onError={() => setError(true)}
+      />
+    </span>
   );
 }
 
@@ -136,10 +131,9 @@ export default function PredictionCard({
 
   const scoreMatchesWinner = selectedWinner && selectedWinner === scoreWinner;
   const canSave = Boolean(selectedWinner && scoreMatchesWinner && !locked && !saving);
-
   const isSaved =
     typeof selected === "string"
-      ? selected === selectedWinner && homeGoals === 0 && awayGoals === 0
+      ? false
       : selected?.winner === selectedWinner &&
         Number(selected?.homeGoals ?? 0) === homeGoals &&
         Number(selected?.awayGoals ?? 0) === awayGoals;
@@ -174,7 +168,7 @@ export default function PredictionCard({
   };
 
   return (
-    <div
+    <article
       className={`pred-card ${selectedWinner ? "pred-card--predicted" : ""} ${
         locked ? "pred-card--locked" : ""
       } ${isSaved ? "pred-card--saved" : ""} animate-fade-up`}
@@ -182,14 +176,15 @@ export default function PredictionCard({
     >
       <div className="pred-header">
         <span className="pred-deadline">{formatKickoff(kickoff)}</span>
-
         <div className="pred-header-right">
           {saving && <div className="pred-saving-dot" />}
           {locked ? (
             <span className="badge badge-muted">Locked</span>
           ) : isSaved ? (
             <span className="badge badge-success">Saved</span>
-          ) : null}
+          ) : (
+            <span className="badge badge-muted">Open</span>
+          )}
         </div>
       </div>
 
@@ -197,16 +192,15 @@ export default function PredictionCard({
         <button
           className={`pred-team-card ${
             selectedWinner === "home" ? "pred-team-card--selected" : ""
-          } ${locked ? "pred-team-card--disabled" : ""}`}
+          }`}
           disabled={locked || saving}
           onClick={() => handleSelectWinner("home")}
           type="button"
         >
-          <TeamLogo team={home} size={52} />
+          <TeamLogo team={home} />
           <span className="pred-team-card-name">{home?.name}</span>
-          {selectedWinner === "home" && (
-            <span className="pred-team-card-check">✓</span>
-          )}
+          <span className="pred-team-card-meta">Home win</span>
+          {selectedWinner === "home" && <span className="pred-team-card-check">OK</span>}
         </button>
 
         <div className="pred-vs-divider">
@@ -216,22 +210,26 @@ export default function PredictionCard({
         <button
           className={`pred-team-card ${
             selectedWinner === "away" ? "pred-team-card--selected" : ""
-          } ${locked ? "pred-team-card--disabled" : ""}`}
+          }`}
           disabled={locked || saving}
           onClick={() => handleSelectWinner("away")}
           type="button"
         >
-          <TeamLogo team={away} size={52} />
+          <TeamLogo team={away} />
           <span className="pred-team-card-name">{away?.name}</span>
-          {selectedWinner === "away" && (
-            <span className="pred-team-card-check">✓</span>
-          )}
+          <span className="pred-team-card-meta">Away win</span>
+          {selectedWinner === "away" && <span className="pred-team-card-check">OK</span>}
         </button>
       </div>
 
       {selectedWinner && !locked && (
         <div className="pred-score-section">
-          <div className="pred-score-label">Predict scoreline</div>
+          <div className="pred-score-topline">
+            <span className="pred-score-label">Scoreline</span>
+            <span className="pred-score-preview">
+              {homeGoals} - {awayGoals}
+            </span>
+          </div>
 
           <div className="pred-score-inputs">
             <div className="pred-score-group">
@@ -287,41 +285,29 @@ export default function PredictionCard({
 
           {!scoreMatchesWinner && (
             <div className="pred-score-warning">
-              Scoreline must match your selected winner.
+              Pick a scoreline where your selected team wins.
             </div>
           )}
         </div>
       )}
 
-      <div className="pred-scoring-info">
-        <div className="pred-scoring-row">
-          <span className="pred-scoring-label">Correct winner</span>
-          <span className="pred-scoring-points">+1 point</span>
+      <div className="pred-footer">
+        <div className="pred-scoring-info">
+          <span>Winner +1</span>
+          <span>Exact score +0.5</span>
         </div>
-        <div className="pred-scoring-row">
-          <span className="pred-scoring-label">Exact score</span>
-          <span className="pred-scoring-points">+0.5 point</span>
-        </div>
-      </div>
 
-      {!locked && selectedWinner && (
-        <button
-          className={`pred-save-btn ${isSaved ? "pred-save-btn--saved" : ""} ${
-            saving ? "pred-save-btn--saving" : ""
-          }`}
-          disabled={!canSave}
-          onClick={handleSave}
-          type="button"
-        >
-          {saving ? (
-            <span className="pred-save-spinner" />
-          ) : isSaved ? (
-            "Prediction saved"
-          ) : (
-            "Save prediction"
-          )}
-        </button>
-      )}
-    </div>
+        {!locked && selectedWinner && (
+          <button
+            className={`pred-save-btn ${isSaved ? "pred-save-btn--saved" : ""}`}
+            disabled={!canSave}
+            onClick={handleSave}
+            type="button"
+          >
+            {saving ? <span className="pred-save-spinner" /> : isSaved ? "Saved" : "Save"}
+          </button>
+        )}
+      </div>
+    </article>
   );
 }

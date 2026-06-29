@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getRoom, getRoomMembers } from '../services/roomService';
-import { getFixtures } from '../services/matchService';
+import { getTournamentMatches } from '../services/matchService';
 import { getUserPredictions, savePrediction } from '../services/predictionService';
 import { getRoomLeaderboard } from '../services/leaderboardService';
 import HeroMatch from '../components/HeroMatch';
@@ -38,7 +38,7 @@ export default function RoomPage() {
       try {
         const [roomData, fixtureData, predData, lbData, memberData] = await Promise.all([
           getRoom(roomId),
-          getFixtures(roomId),
+          getTournamentMatches(roomId),
           getUserPredictions(user.uid, roomId),
           getRoomLeaderboard(roomId),
           getRoomMembers(roomId),
@@ -60,13 +60,29 @@ export default function RoomPage() {
         });
         setPredictions(predMap);
 
-        const upcoming = (fixtureData || []).filter(f => f.fixture?.status?.short !== 'FT');
-        const live     = upcoming.find(f => ['1H','HT','2H','ET','P','LIVE'].includes(f.fixture?.status?.short));
-        const next     = upcoming.find(f => f.fixture?.status?.short === 'NS');
+        const now = new Date();
+        const predictionCutoff = new Date(now.getTime() + 34 * 60 * 60 * 1000);
+        const matches = (fixtureData || []).slice().sort(
+          (a, b) => new Date(a.fixture?.date) - new Date(b.fixture?.date)
+        );
+        const liveStatuses = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
+        const live = matches.find(f => liveStatuses.includes(f.fixture?.status?.short));
+        const upcoming = matches.filter(f => {
+          const kickoff = new Date(f.fixture?.date);
+          return (
+            f.fixture?.status?.short === 'NS' &&
+            kickoff >= now &&
+            kickoff <= predictionCutoff
+          );
+        });
+        const next = upcoming[0] || matches.find(f => {
+          const kickoff = new Date(f.fixture?.date);
+          return f.fixture?.status?.short === 'NS' && kickoff >= now;
+        });
 
-        setLiveMatch(live  || null);
-        setNextMatch(next  || null);
-        setFixtures(upcoming.filter(f => f.fixture?.status?.short === 'NS'));
+        setLiveMatch(live || null);
+        setNextMatch(next || null);
+        setFixtures(upcoming);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -119,6 +135,7 @@ const handlePredict = useCallback(
 
   // ── Hero fixture = live first, then next upcoming ──
   const heroFixture = liveMatch || nextMatch;
+  const heroPrediction = heroFixture ? predictions[heroFixture.fixture.id] : null;
 
   // ── Prediction count stats ──────────────────────────
   const totalFixtures  = fixtures.length;
@@ -134,6 +151,7 @@ const handlePredict = useCallback(
         fixture={heroFixture}
         roomName={room?.name}
         memberCount={members.length}
+        userPrediction={heroPrediction}
       />
 
       {/* ── Tab bar ── */}
@@ -156,6 +174,9 @@ const handlePredict = useCallback(
 
         {tab === 'Predict' && (
           <div className="animate-fade-up">
+            {liveMatch && (
+              <div className="room-live-strip">Live now: {liveMatch.teams?.home?.name} vs {liveMatch.teams?.away?.name}</div>
+            )}
             <ProgressCard completed={predCount} total={totalFixtures} />
 
             {fixtures.length === 0 ? (

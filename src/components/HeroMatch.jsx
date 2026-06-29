@@ -1,40 +1,42 @@
-import { useState, useEffect } from 'react';
-import './HeroMatch.css';
+import { useEffect, useState } from "react";
+import "./HeroMatch.css";
 
-/* ─── Helpers ───────────────────────────────────────────────────── */
+const LIVE_STATUSES = ["1H", "HT", "2H", "ET", "BT", "P", "LIVE"];
+
 function getStatusInfo(fixture) {
   const short = fixture?.fixture?.status?.short;
   const elapsed = fixture?.fixture?.status?.elapsed;
-
-  const LIVE_STATUSES = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
   const isLive = LIVE_STATUSES.includes(short);
 
   if (isLive) {
-    if (short === 'HT') return { label: 'Half Time', isLive: true };
-    if (short === 'ET') return { label: `${elapsed}' ET`, isLive: true };
-    if (short === 'P')  return { label: 'Penalties', isLive: true };
-    return { label: `${elapsed ?? 0}'`, isLive: true };
+    if (short === "HT") return { label: "Half time", isLive: true };
+    if (short === "ET") return { label: `${elapsed ?? ""}' ET`, isLive: true };
+    if (short === "P") return { label: "Penalties", isLive: true };
+    return { label: elapsed ? `${elapsed}'` : "Live now", isLive: true };
   }
 
-  if (short === 'NS') {
+  if (short === "NS") {
     const date = fixture?.fixture?.date;
-    if (!date) return { label: 'Upcoming', isLive: false };
+    if (!date) return { label: "Upcoming", isLive: false };
     return { label: null, isLive: false, kickoff: new Date(date) };
   }
 
-  if (short === 'FT') return { label: 'Full Time', isLive: false };
-  return { label: short, isLive: false };
+  if (short === "FT") return { label: "Full time", isLive: false };
+  return { label: short || "Match", isLive: false };
 }
 
 function useCountdown(kickoff) {
-  const [display, setDisplay] = useState('');
+  const [display, setDisplay] = useState("");
 
   useEffect(() => {
-    if (!kickoff) return;
+    if (!kickoff) return undefined;
 
     const tick = () => {
       const diff = kickoff - Date.now();
-      if (diff <= 0) { setDisplay('Starting soon'); return; }
+      if (diff <= 0) {
+        setDisplay("Starting soon");
+        return;
+      }
 
       const h = Math.floor(diff / 3_600_000);
       const m = Math.floor((diff % 3_600_000) / 60_000);
@@ -58,11 +60,16 @@ function useCountdown(kickoff) {
   return display;
 }
 
-function TeamLogo({ team, size = 56 }) {
+function TeamLogo({ team, size = 64 }) {
   const [imgError, setImgError] = useState(false);
   const initials = team?.name
-    ? team.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-    : '?';
+    ? team.name
+        .split(" ")
+        .map((word) => word[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "?";
 
   if (!team?.logo || imgError) {
     return (
@@ -73,35 +80,42 @@ function TeamLogo({ team, size = 56 }) {
   }
 
   return (
-    <img
-      src={team.logo}
-      alt={team.name}
-      width={size}
-      height={size}
-      className="hero-team-logo"
-      onError={() => setImgError(true)}
-    />
+    <span className="hero-logo-shell" style={{ width: size, height: size }}>
+      <img
+        src={team.logo}
+        alt={team.name}
+        width={size}
+        height={size}
+        className="hero-team-logo"
+        onError={() => setImgError(true)}
+      />
+    </span>
   );
 }
 
-/* ─── Component ─────────────────────────────────────────────────── */
-export default function HeroMatch({ fixture, roomName, memberCount }) {
-  const statusInfo = fixture ? getStatusInfo(fixture) : null;
-  const countdown  = useCountdown(statusInfo?.kickoff);
+function winnerLabel(prediction, homeName, awayName) {
+  if (prediction?.winner === "home") return homeName;
+  if (prediction?.winner === "away") return awayName;
+  return "Not picked";
+}
 
-  const homeTeam  = fixture?.teams?.home;
-  const awayTeam  = fixture?.teams?.away;
+export default function HeroMatch({ fixture, roomName, memberCount, userPrediction }) {
+  const statusInfo = fixture ? getStatusInfo(fixture) : null;
+  const countdown = useCountdown(statusInfo?.kickoff);
+
+  const homeTeam = fixture?.teams?.home;
+  const awayTeam = fixture?.teams?.away;
   const homeGoals = fixture?.goals?.home;
   const awayGoals = fixture?.goals?.away;
-  const league    = fixture?.league;
+  const league = fixture?.league;
 
   const isLive = statusInfo?.isLive;
-  const isNS   = fixture?.fixture?.status?.short === 'NS';
-  const showScore = isLive || fixture?.fixture?.status?.short === 'FT';
+  const isNS = fixture?.fixture?.status?.short === "NS";
+  const showScore = isLive || fixture?.fixture?.status?.short === "FT";
+  const hasPrediction = userPrediction?.winner === "home" || userPrediction?.winner === "away";
 
   return (
-    <div className="hero-root">
-      {/* Atmospheric background */}
+    <div className={`hero-root ${isLive ? "hero-root--live" : ""}`}>
       <div className="hero-bg">
         <div className="hero-bg-base" />
         <div className="hero-bg-glow hero-bg-glow--left" />
@@ -109,13 +123,10 @@ export default function HeroMatch({ fixture, roomName, memberCount }) {
         {isLive && <div className="hero-bg-pulse" />}
       </div>
 
-      {/* Room header */}
       <div className="hero-header">
         <div className="hero-room-info">
-          <span className="hero-room-name">{roomName || 'My Room'}</span>
-          {memberCount > 0 && (
-            <span className="hero-member-count">{memberCount} members</span>
-          )}
+          <span className="hero-room-name">{roomName || "My Room"}</span>
+          {memberCount > 0 && <span className="hero-member-count">{memberCount} members</span>}
         </div>
 
         {isLive ? (
@@ -128,60 +139,86 @@ export default function HeroMatch({ fixture, roomName, memberCount }) {
         ) : null}
       </div>
 
-      {/* Match display */}
       {fixture ? (
-        <div className="hero-match">
-          {/* Home team */}
-          <div className="hero-team">
-            <TeamLogo team={homeTeam} size={56} />
-            <span className="hero-team-name">{homeTeam?.name || '—'}</span>
-          </div>
+        <>
+          <div className="hero-match">
+            <div className="hero-team">
+              <TeamLogo team={homeTeam} />
+              <span className="hero-team-name">{homeTeam?.name || "-"}</span>
+            </div>
 
-          {/* Centre column */}
-          <div className="hero-centre">
-            {showScore ? (
-              <>
-                <div className="hero-score">
-                  <span className={homeGoals > awayGoals ? 'hero-score-num hero-score-num--winning' : 'hero-score-num'}>
-                    {homeGoals ?? 0}
-                  </span>
-                  <span className="hero-score-sep">:</span>
-                  <span className={awayGoals > homeGoals ? 'hero-score-num hero-score-num--winning' : 'hero-score-num'}>
-                    {awayGoals ?? 0}
-                  </span>
-                </div>
-                <div className={`hero-status ${isLive ? 'hero-status--live' : ''}`}>
-                  {statusInfo?.label}
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="hero-vs">VS</div>
-                {isNS && countdown && (
-                  <div className="hero-countdown">
-                    <span className="hero-countdown-label">Kicks off in</span>
-                    <span className="hero-countdown-time">{countdown}</span>
+            <div className="hero-centre">
+              {showScore ? (
+                <>
+                  <div className="hero-score">
+                    <span
+                      className={
+                        homeGoals > awayGoals
+                          ? "hero-score-num hero-score-num--winning"
+                          : "hero-score-num"
+                      }
+                    >
+                      {homeGoals ?? 0}
+                    </span>
+                    <span className="hero-score-sep">:</span>
+                    <span
+                      className={
+                        awayGoals > homeGoals
+                          ? "hero-score-num hero-score-num--winning"
+                          : "hero-score-num"
+                      }
+                    >
+                      {awayGoals ?? 0}
+                    </span>
                   </div>
-                )}
-              </>
-            )}
+                  <div className={`hero-status ${isLive ? "hero-status--live" : ""}`}>
+                    {statusInfo?.label}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="hero-vs">VS</div>
+                  {isNS && countdown && (
+                    <div className="hero-countdown">
+                      <span className="hero-countdown-label">Kicks off in</span>
+                      <span className="hero-countdown-time">{countdown}</span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="hero-team">
+              <TeamLogo team={awayTeam} />
+              <span className="hero-team-name">{awayTeam?.name || "-"}</span>
+            </div>
           </div>
 
-          {/* Away team */}
-          <div className="hero-team">
-            <TeamLogo team={awayTeam} size={56} />
-            <span className="hero-team-name">{awayTeam?.name || '—'}</span>
+          <div className="hero-details">
+            <div className="hero-detail">
+              <span className="hero-detail-label">Your pick</span>
+              <span className="hero-detail-value">
+                {hasPrediction ? winnerLabel(userPrediction, homeTeam?.name, awayTeam?.name) : "No prediction"}
+              </span>
+            </div>
+
+            <div className="hero-detail hero-detail--score">
+              <span className="hero-detail-label">Your score</span>
+              <span className="hero-detail-value">
+                {hasPrediction
+                  ? `${userPrediction.homeGoals ?? 0} - ${userPrediction.awayGoals ?? 0}`
+                  : "-"}
+              </span>
+            </div>
           </div>
-        </div>
+        </>
       ) : (
-        /* Empty hero — no upcoming match */
         <div className="hero-empty">
           <div className="hero-empty-icon">⚽</div>
           <div className="hero-empty-text">No upcoming matches</div>
         </div>
       )}
 
-      {/* Competition info */}
       {league && (
         <div className="hero-competition">
           {league.logo && (
@@ -191,20 +228,25 @@ export default function HeroMatch({ fixture, roomName, memberCount }) {
               className="hero-comp-logo"
               width={16}
               height={16}
-              onError={e => { e.target.style.display = 'none'; }}
+              onError={(event) => {
+                event.currentTarget.style.display = "none";
+              }}
             />
           )}
           <span className="hero-comp-name">{league.name}</span>
-          {league.round && <span className="hero-comp-round">· {league.round}</span>}
+          {league.round && <span className="hero-comp-round">- {league.round}</span>}
           {isNS && fixture?.fixture?.date && (
             <span className="hero-comp-time">
-              · {new Date(fixture.fixture.date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+              -{" "}
+              {new Date(fixture.fixture.date).toLocaleTimeString("en-GB", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </span>
           )}
         </div>
       )}
 
-      {/* Bottom fade */}
       <div className="hero-fade" />
     </div>
   );
