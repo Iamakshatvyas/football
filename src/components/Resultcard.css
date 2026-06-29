@@ -1,0 +1,52 @@
+.result-card{
+    background:#1a1a1a;
+    border-radius:16px;
+    padding:18px;
+    margin-bottom:16px;
+    color:white;
+}
+
+.result-date{
+    font-size:.8rem;
+    color:#9ca3af;
+    margin-bottom:12px;
+}
+
+.result-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.team{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    width:38%;
+}
+
+.team.right{
+    justify-content:flex-end;
+    text-align:right;
+}
+
+.team-logo{
+    width:36px;
+    height:36px;
+    object-fit:contain;
+}
+
+.score{
+    font-size:26px;
+    font-weight:700;
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+
+.status{
+    margin-top:14px;
+    text-align:center;
+    color:#22c55e;
+    font-weight:700;
+}

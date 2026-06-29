@@ -74,60 +74,82 @@ async function fetchMatches() {
     const res = await api.get("/getFixtures");
 
     return (res.data.matches || []).map(normalize);
-  } catch (err) {
-    console.error("MatchService:", err);
+  } catch (error) {
+    console.error("MatchService:", error);
     return [];
   }
 }
 
-/* ---------------- Upcoming Fixtures ---------------- */
+/* =======================================================
+   UPCOMING FIXTURES (Next 34 Hours)
+======================================================= */
 
-export const getFixtures = async () => {
+export async function getFixtures() {
   const fixtures = await fetchMatches();
 
   const now = new Date();
-  const next34Hours = new Date(now.getTime() + 34 * 60 * 60 * 1000);
+  const cutoff = new Date(now.getTime() + 34 * 60 * 60 * 1000);
 
   return fixtures
-    .filter((fixture) => {
-      const kickoff = new Date(fixture.fixture.date);
+    .filter((match) => {
+      const kickoff = new Date(match.fixture.date);
 
       return (
         kickoff >= now &&
-        kickoff <= next34Hours &&
-        fixture.fixture.status.short === "NS"
+        kickoff <= cutoff &&
+        match.fixture.status.short === "NS"
       );
     })
     .sort(
       (a, b) =>
-        new Date(a.fixture.date) - new Date(b.fixture.date)
+        new Date(a.fixture.date) -
+        new Date(b.fixture.date)
     );
-};
+}
 
-/* ---------------- Results ---------------- */
+/* =======================================================
+   RESULTS (Newest First)
+======================================================= */
 
-export const getRecentResults = async () => {
+export async function getRecentResults() {
   const fixtures = await fetchMatches();
 
   return fixtures
     .filter(
-      (fixture) =>
-        fixture.fixture.status.short === "FT"
+      (match) =>
+        match.fixture.status.short === "FT"
     )
     .sort(
       (a, b) =>
-        new Date(b.fixture.date) - new Date(a.fixture.date)
+        new Date(b.fixture.date) -
+        new Date(a.fixture.date)
     );
-};
+}
 
-/* ---------------- Live Matches ---------------- */
+/* =======================================================
+   LIVE MATCHES
+======================================================= */
 
-export const getLiveFixtures = async () => {
+export async function getLiveFixtures() {
   const fixtures = await fetchMatches();
 
-  return fixtures.filter((fixture) =>
+  return fixtures.filter((match) =>
     ["LIVE", "1H", "HT"].includes(
-      fixture.fixture.status.short
+      match.fixture.status.short
     )
   );
-};
+}
+
+/* =======================================================
+   TOURNAMENT STAGE
+======================================================= */
+
+export async function getTournamentMatches() {
+  const fixtures = await fetchMatches();
+
+  return fixtures.sort(
+    (a, b) =>
+      new Date(a.fixture.date) -
+      new Date(b.fixture.date)
+  );
+}
