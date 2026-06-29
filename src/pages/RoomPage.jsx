@@ -263,7 +263,13 @@ function RecentResults({ roomId, currentUserId, predictions }) {
 
   if (loading) return <ResultsSkeleton />;
 
-  if (!results.length) {
+  // Only finished matches, sorted newest first
+  const finished = results
+    .filter(f => f.fixture?.status?.short === 'FT')
+    .slice()
+    .sort((a, b) => new Date(b.fixture?.date) - new Date(a.fixture?.date));
+
+  if (!finished.length) {
     return (
       <div className="empty-state">
         <div className="empty-state__icon">📊</div>
@@ -275,29 +281,56 @@ function RecentResults({ roomId, currentUserId, predictions }) {
 
   return (
     <div className="results-list animate-fade-up">
-      {results.map(fixture => {
-        const fid       = fixture.fixture?.id;
-        const homeGoals = fixture.goals?.home ?? 0;
-        const awayGoals = fixture.goals?.away ?? 0;
-        const outcome   = homeGoals > awayGoals ? 'home' : awayGoals > homeGoals ? 'away' : 'draw';
-        const myPred    = predictions[fid];
-        const correct   = myPred && myPred === outcome;
+      {finished.map(fixture => {
+        const fid        = fixture.fixture?.id;
+        const homeGoals  = fixture.goals?.home ?? 0;
+        const awayGoals  = fixture.goals?.away ?? 0;
+        const outcome    = homeGoals > awayGoals ? 'home' : 'away';
+        const homeName   = fixture.teams?.home?.name;
+        const awayName   = fixture.teams?.away?.name;
+        const myPred     = predictions[fid];
+        const hasVoted   = myPred === 'home' || myPred === 'away';
+        const correct    = hasVoted && myPred === outcome;
+
+        let statusClass = 'result-card--novote';
+        if (hasVoted) statusClass = correct ? 'result-card--correct' : 'result-card--wrong';
 
         return (
-          <div key={fid} className={`result-card ${correct ? 'result-card--correct' : myPred ? 'result-card--wrong' : ''}`}>
+          <div key={fid} className={`result-card ${statusClass}`}>
             <div className="result-comp">{fixture.league?.name}</div>
             <div className="result-teams">
-              <span className="result-team truncate">{fixture.teams?.home?.name}</span>
+              <span className="result-team truncate">{homeName}</span>
               <span className="result-score">{homeGoals} – {awayGoals}</span>
-              <span className="result-team truncate" style={{ textAlign: 'right' }}>{fixture.teams?.away?.name}</span>
+              <span className="result-team truncate" style={{ textAlign: 'right' }}>{awayName}</span>
             </div>
-            <div className="result-footer">
-              {myPred ? (
-                correct
-                  ? <span className="result-badge result-badge--correct">✓ Correct</span>
-                  : <span className="result-badge result-badge--wrong">✗ Wrong</span>
+
+            <div className="result-vote">
+              {hasVoted ? (
+                <span className="result-vote-label">
+                  You voted: {myPred === 'home' ? homeName : awayName}
+                </span>
               ) : (
-                <span className="result-badge result-badge--none">No prediction</span>
+                <span className="result-vote-label result-vote-label--none">
+                  You voted: —
+                </span>
+              )}
+            </div>
+
+            <div className="result-footer">
+              {hasVoted ? (
+                correct ? (
+                  <span className="result-badge result-badge--correct">
+                    ✅ Correct <span className="result-badge-points">+1 Point</span>
+                  </span>
+                ) : (
+                  <span className="result-badge result-badge--wrong">
+                    ❌ Wrong <span className="result-badge-points">0 Points</span>
+                  </span>
+                )
+              ) : (
+                <span className="result-badge result-badge--none">
+                  ⚪ Not Voted
+                </span>
               )}
               <span className="result-date">
                 {fixture.fixture?.date
