@@ -14,29 +14,7 @@ exports.handler = async () => {
       }
     );
 
-    // --- NEW FILTERING LOGIC ---
-    
-    // 1. Get the exact current time when the request is made
-    const now = new Date();
-    
-    // 2. Calculate the cutoff time (34 hours in milliseconds)
-    const thirtyFourHoursFromNow = new Date(now.getTime() + 34 * 60 * 60 * 1000);
-
-    // 3. Filter the matches array based on the utcDate provided by the API
-    const filteredMatches = (response.data.matches || []).filter((match) => {
-      const matchDate = new Date(match.utcDate);
-      return matchDate >= now && matchDate <= thirtyFourHoursFromNow;
-    });
-
-    // 4. Update the response payload with the filtered array and new count
-    const payload = {
-      ...response.data,
-      count: filteredMatches.length,
-      matches: filteredMatches,
-    };
-
-    // ---------------------------
-
+    // Return ALL World Cup matches
     return {
       statusCode: 200,
       headers: {
@@ -44,7 +22,7 @@ exports.handler = async () => {
         "Access-Control-Allow-Headers": "Content-Type",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(response.data),
     };
   } catch (error) {
     console.error(
