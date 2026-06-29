@@ -1,0 +1,6 @@
+.layout-root { display: flex; flex-direction: column; min-height: 100vh; background: var(--bg-base); }
+.layout-main { flex: 1; }
+@media (min-width: 768px) {
+  .layout-root { flex-direction: row; }
+  .layout-main { margin-left: 0; }
+}

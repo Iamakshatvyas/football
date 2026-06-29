@@ -1,0 +1,295 @@
+/* =====================================================
+   HeroMatch.css
+   ===================================================== */
+
+.hero-root {
+  position: relative;
+  min-height: 210px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 16px 14px;
+}
+
+/* ── Background layers ──────────────────────────────── */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero-bg-base {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(155deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+
+.hero-bg-glow {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+.hero-bg-glow--left {
+  bottom: -60px;
+  left: -40px;
+  background: rgba(255, 90, 0, 0.18);
+}
+
+.hero-bg-glow--right {
+  top: -60px;
+  right: -40px;
+  background: rgba(59, 130, 246, 0.12);
+}
+
+@keyframes heroPulse {
+  0%, 100% { opacity: 0.06; transform: scale(1); }
+  50% { opacity: 0.12; transform: scale(1.05); }
+}
+
+.hero-bg-pulse {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(255,59,59,0.15) 0%, transparent 70%);
+  animation: heroPulse 3s ease-in-out infinite;
+}
+
+.hero-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background: linear-gradient(to bottom, transparent, var(--bg-base));
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ── Content layers (above bg) ──────────────────────── */
+.hero-header,
+.hero-match,
+.hero-competition,
+.hero-empty {
+  position: relative;
+  z-index: 2;
+}
+
+/* ── Header ─────────────────────────────────────────── */
+.hero-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  margin-bottom: 16px;
+}
+
+.hero-room-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hero-room-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: -0.2px;
+}
+
+.hero-member-count {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 500;
+}
+
+/* ── Match layout ───────────────────────────────────── */
+.hero-match {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+/* ── Team block ─────────────────────────────────────── */
+.hero-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.hero-team-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+}
+
+.hero-team-fallback {
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.hero-team-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+/* ── Centre column ──────────────────────────────────── */
+.hero-centre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+/* Score */
+.hero-score {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hero-score-num {
+  font-size: 38px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1;
+  letter-spacing: -1px;
+  transition: color var(--dur-base) var(--ease-out);
+}
+
+.hero-score-num--winning {
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(255, 149, 0, 0.5);
+}
+
+.hero-score-sep {
+  font-size: 28px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: -4px;
+}
+
+/* Status */
+.hero-status {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.hero-status--live {
+  color: var(--color-live);
+}
+
+/* VS badge */
+.hero-vs {
+  font-size: 16px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.2);
+  letter-spacing: 2px;
+}
+
+/* Countdown */
+.hero-countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.hero-countdown-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.hero-countdown-time {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-accent);
+  letter-spacing: -0.3px;
+}
+
+/* ── Competition row ────────────────────────────────── */
+.hero-competition {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 2px;
+}
+
+.hero-comp-logo {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  opacity: 0.7;
+}
+
+.hero-comp-name {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 500;
+}
+
+.hero-comp-round,
+.hero-comp-time {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* ── Empty hero ─────────────────────────────────────── */
+.hero-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0 24px;
+  gap: 8px;
+}
+
+.hero-empty-icon {
+  font-size: 36px;
+  opacity: 0.3;
+}
+
+.hero-empty-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.3);
+  font-weight: 500;
+}
+
+/* ── Responsive ─────────────────────────────────────── */
+@media (min-width: 480px) {
+  .hero-root { min-height: 230px; }
+  .hero-team-logo { width: 64px; height: 64px; }
+  .hero-score-num { font-size: 44px; }
+  .hero-team-name { font-size: 13px; }
+}

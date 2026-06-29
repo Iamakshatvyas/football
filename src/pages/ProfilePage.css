@@ -1,0 +1,24 @@
+.profile-root { min-height: 100vh; background: var(--bg-base); padding-bottom: 100px; }
+.profile-hero { display: flex; flex-direction: column; align-items: center; padding: 40px 24px 28px; gap: 10px; }
+.profile-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--color-orange-subtle); color: var(--text-accent);
+  border: 2px solid var(--border-accent); display: flex; align-items: center;
+  justify-content: center; font-size: 24px; font-weight: 800; margin-bottom: 4px;
+}
+.profile-name { font-size: 22px; font-weight: 800; color: var(--text-primary); }
+.profile-email { font-size: 13px; color: var(--text-muted); }
+.profile-section { padding: 0 16px; margin-bottom: 24px; }
+.profile-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.profile-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 14px; background: var(--bg-elevated);
+  border: 0.5px solid var(--border-default); border-radius: var(--radius-md);
+  cursor: pointer; transition: background var(--dur-fast);
+}
+.profile-row:hover { background: var(--bg-surface); }
+.profile-row-icon { font-size: 18px; }
+.profile-row-label { flex: 1; font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.profile-row-arrow { font-size: 20px; color: var(--text-muted); }
+.profile-row--danger .profile-row-label { color: var(--color-danger); }
+.profile-version { text-align: center; font-size: 11px; color: var(--text-disabled); padding: 0 16px; }

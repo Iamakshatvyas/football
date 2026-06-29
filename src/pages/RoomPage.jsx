@@ -1,0 +1,392 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { getRoom, getRoomMembers } from '../services/roomService';
+import { getFixtures } from '../services/matchService';
+import { getUserPredictions, savePrediction } from '../services/predictionService';
+import { getRoomLeaderboard } from '../services/leaderboardService';
+import HeroMatch from '../components/HeroMatch';
+import PredictionCard from '../components/PredictionCard';
+import MiniLeaderboard from '../components/MiniLeaderboard';
+import ProgressCard from '../components/ProgressCard';
+import './RoomPage.css';
+
+const TABS = ['Predict', 'Standings', 'Results', 'Members'];
+
+export default function RoomPage() {
+  const { roomId } = useParams();
+  const { user } = useAuth();
+
+  const [room,        setRoom]        = useState(null);
+  const [fixtures,    setFixtures]    = useState([]);
+  const [predictions, setPredictions] = useState({});
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [members,     setMembers]     = useState([]);
+  const [liveMatch,   setLiveMatch]   = useState(null);
+  const [nextMatch,   setNextMatch]   = useState(null);
+  const [tab,         setTab]         = useState('Predict');
+  const [loading,     setLoading]     = useState(true);
+  const [saving,      setSaving]      = useState({});
+
+  // ── Load all room data ──────────────────────────────
+  useEffect(() => {
+    if (!roomId || !user) return;
+    let cancelled = false;
+
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [roomData, fixtureData, predData, lbData, memberData] = await Promise.all([
+          getRoom(roomId),
+          getFixtures(roomId),
+          getUserPredictions(user.uid, roomId),
+          getRoomLeaderboard(roomId),
+          getRoomMembers(roomId),
+        ]);
+
+        if (cancelled) return;
+
+        setRoom(roomData);
+        setLeaderboard(lbData || []);
+        setMembers(memberData || []);
+
+        const predMap = {};
+        (predData || []).forEach(p => { predMap[p.fixtureId] = p.prediction; });
+        setPredictions(predMap);
+
+        const upcoming = (fixtureData || []).filter(f => f.fixture?.status?.short !== 'FT');
+        const live     = upcoming.find(f => ['1H','HT','2H','ET','P','LIVE'].includes(f.fixture?.status?.short));
+        const next     = upcoming.find(f => f.fixture?.status?.short === 'NS');
+
+        setLiveMatch(live  || null);
+        setNextMatch(next  || null);
+        setFixtures(upcoming.filter(f => f.fixture?.status?.short === 'NS'));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+    return () => { cancelled = true; };
+  }, [roomId, user]);
+
+  // ── Predict ─────────────────────────────────────────
+  const handlePredict = useCallback(async (fixtureId, outcome) => {
+    setSaving(s => ({ ...s, [fixtureId]: true }));
+    try {
+      await savePrediction(user.uid, roomId, fixtureId, outcome);
+      setPredictions(p => ({ ...p, [fixtureId]: outcome }));
+    } finally {
+      setSaving(s => ({ ...s, [fixtureId]: false }));
+    }
+  }, [user, roomId]);
+
+  // ── Hero fixture = live first, then next upcoming ──
+  const heroFixture = liveMatch || nextMatch;
+
+  // ── Prediction count stats ──────────────────────────
+  const totalFixtures  = fixtures.length;
+  const predCount      = fixtures.filter(f => predictions[f.fixture.id]).length;
+
+  // ── Loading skeletons ────────────────────────────────
+  if (loading) return <RoomSkeleton />;
+
+  return (
+    <div className="room-root">
+      {/* ── Hero ── */}
+      <HeroMatch
+        fixture={heroFixture}
+        roomName={room?.name}
+        memberCount={members.length}
+      />
+
+      {/* ── Tab bar ── */}
+      <div className="room-tabs" role="tablist">
+        {TABS.map(t => (
+          <button
+            key={t}
+            role="tab"
+            aria-selected={tab === t}
+            className={`room-tab ${tab === t ? 'room-tab--active' : ''}`}
+            onClick={() => setTab(t)}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Tab content ── */}
+      <div className="room-content">
+
+        {tab === 'Predict' && (
+          <div className="animate-fade-up">
+            <ProgressCard completed={predCount} total={totalFixtures} />
+
+            {fixtures.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-state__icon">📅</div>
+                <div className="empty-state__title">No upcoming fixtures</div>
+                <div className="empty-state__subtitle">Check back soon — new matches will appear here automatically.</div>
+              </div>
+            ) : (
+              <>
+                <p className="section-label" style={{ marginTop: 20 }}>
+                  Upcoming matches
+                </p>
+                <div className="prediction-list">
+                  {fixtures.map((fixture, i) => (
+                    <PredictionCard
+                      key={fixture.fixture.id}
+                      fixture={fixture}
+                      selected={predictions[fixture.fixture.id]}
+                      saving={saving[fixture.fixture.id]}
+                      onPredict={handlePredict}
+                      animationDelay={i * 60}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+
+            {leaderboard.length > 0 && (
+              <>
+                <p className="section-label" style={{ marginTop: 24 }}>
+                  Room standings · top 5
+                </p>
+                <MiniLeaderboard entries={leaderboard.slice(0, 5)} currentUserId={user.uid} />
+              </>
+            )}
+          </div>
+        )}
+
+        {tab === 'Standings' && (
+          <FullLeaderboard entries={leaderboard} currentUserId={user.uid} />
+        )}
+
+        {tab === 'Results' && (
+          <RecentResults roomId={roomId} currentUserId={user.uid} predictions={predictions} />
+        )}
+
+        {tab === 'Members' && (
+          <MembersList members={members} leaderboard={leaderboard} currentUserId={user.uid} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Full Leaderboard Tab ──────────────────────────────────────── */
+function FullLeaderboard({ entries, currentUserId }) {
+  if (!entries.length) {
+    return (
+      <div className="empty-state">
+        <div className="empty-state__icon">🏆</div>
+        <div className="empty-state__title">No scores yet</div>
+        <div className="empty-state__subtitle">Make your predictions to climb the table.</div>
+      </div>
+    );
+  }
+
+  const top3 = entries.slice(0, 3);
+  const rest = entries.slice(3);
+  const medals = ['🥇', '🥈', '🥉'];
+  const medalColors = ['#FF9500', '#B0B8C1', '#CD8B3A'];
+
+  return (
+    <div className="animate-fade-up">
+      {/* Podium */}
+      <div className="podium">
+        {[top3[1], top3[0], top3[2]].filter(Boolean).map((entry, visualIndex) => {
+          const actualRank = top3.indexOf(entry);
+          const heights = [100, 130, 80]; // 2nd, 1st, 3rd
+          return (
+            <div
+              key={entry.userId}
+              className={`podium-block ${entry.userId === currentUserId ? 'podium-block--you' : ''}`}
+              style={{ height: heights[visualIndex] }}
+            >
+              <div className="podium-medal">{medals[actualRank]}</div>
+              <div className="podium-name truncate">{entry.displayName?.split(' ')[0]}</div>
+              <div className="podium-pts">{entry.points ?? 0}</div>
+              <div className="podium-bar" style={{ background: medalColors[actualRank], opacity: 0.2 + (actualRank === 0 ? 0.3 : 0) }} />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Full list */}
+      <div className="lb-list">
+        {entries.map((entry, i) => (
+          <div
+            key={entry.userId}
+            className={`lb-row ${entry.userId === currentUserId ? 'lb-row--you' : ''} animate-fade-up`}
+            style={{ animationDelay: `${i * 40}ms` }}
+          >
+            <div className={`lb-rank ${i < 3 ? 'lb-rank--top' : ''}`}>
+              {i < 3 ? medals[i] : i + 1}
+            </div>
+            <InitialsAvatar name={entry.displayName} size="md" />
+            <div className="lb-info">
+              <div className="lb-name truncate">
+                {entry.displayName || 'Player'}
+                {entry.userId === currentUserId && <span className="lb-you-tag">You</span>}
+              </div>
+              <div className="lb-sub">{entry.correctPredictions ?? 0} correct · {entry.accuracy ?? 0}% acc</div>
+            </div>
+            <div className="lb-pts-col">
+              <div className="lb-pts">{entry.points ?? 0}</div>
+              {entry.movement > 0  && <div className="lb-movement lb-movement--up">↑ {entry.movement}</div>}
+              {entry.movement < 0  && <div className="lb-movement lb-movement--down">↓ {Math.abs(entry.movement)}</div>}
+              {entry.movement === 0 && <div className="lb-movement lb-movement--same">—</div>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Recent Results Tab ────────────────────────────────────────── */
+function RecentResults({ roomId, currentUserId, predictions }) {
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Import dynamically to avoid circular deps
+    import('../services/matchService').then(({ getRecentResults }) => {
+      if (!getRecentResults) { setLoading(false); return; }
+      getRecentResults(roomId)
+        .then(r => setResults(r || []))
+        .finally(() => setLoading(false));
+    });
+  }, [roomId]);
+
+  if (loading) return <ResultsSkeleton />;
+
+  if (!results.length) {
+    return (
+      <div className="empty-state">
+        <div className="empty-state__icon">📊</div>
+        <div className="empty-state__title">No results yet</div>
+        <div className="empty-state__subtitle">Completed matches will appear here.</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="results-list animate-fade-up">
+      {results.map(fixture => {
+        const fid       = fixture.fixture?.id;
+        const homeGoals = fixture.goals?.home ?? 0;
+        const awayGoals = fixture.goals?.away ?? 0;
+        const outcome   = homeGoals > awayGoals ? 'home' : awayGoals > homeGoals ? 'away' : 'draw';
+        const myPred    = predictions[fid];
+        const correct   = myPred && myPred === outcome;
+
+        return (
+          <div key={fid} className={`result-card ${correct ? 'result-card--correct' : myPred ? 'result-card--wrong' : ''}`}>
+            <div className="result-comp">{fixture.league?.name}</div>
+            <div className="result-teams">
+              <span className="result-team truncate">{fixture.teams?.home?.name}</span>
+              <span className="result-score">{homeGoals} – {awayGoals}</span>
+              <span className="result-team truncate" style={{ textAlign: 'right' }}>{fixture.teams?.away?.name}</span>
+            </div>
+            <div className="result-footer">
+              {myPred ? (
+                correct
+                  ? <span className="result-badge result-badge--correct">✓ Correct</span>
+                  : <span className="result-badge result-badge--wrong">✗ Wrong</span>
+              ) : (
+                <span className="result-badge result-badge--none">No prediction</span>
+              )}
+              <span className="result-date">
+                {fixture.fixture?.date
+                  ? new Date(fixture.fixture.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+                  : ''}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ─── Members Tab ───────────────────────────────────────────────── */
+function MembersList({ members, leaderboard, currentUserId }) {
+  const lbMap = {};
+  leaderboard.forEach(e => { lbMap[e.userId] = e; });
+
+  return (
+    <div className="members-list animate-fade-up">
+      {members.map((member, i) => {
+        const lb = lbMap[member.uid];
+        return (
+          <div key={member.uid} className={`member-row ${member.uid === currentUserId ? 'member-row--you' : ''} animate-fade-up`} style={{ animationDelay: `${i * 40}ms` }}>
+            <InitialsAvatar name={member.displayName} size="md" />
+            <div className="member-info">
+              <div className="member-name">
+                {member.displayName || 'Player'}
+                {member.uid === currentUserId && <span className="lb-you-tag">You</span>}
+              </div>
+              <div className="member-sub">Joined {member.joinedAt ? new Date(member.joinedAt?.toDate?.() || member.joinedAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) : '—'}</div>
+            </div>
+            {lb && (
+              <div className="member-stats">
+                <div className="member-pts">{lb.points ?? 0} pts</div>
+                <div className="member-acc">{lb.accuracy ?? 0}% acc</div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ─── Initials Avatar ───────────────────────────────────────────── */
+function InitialsAvatar({ name, size = 'md' }) {
+  const initials = name
+    ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+    : '?';
+  return <div className={`avatar avatar-${size}`}>{initials}</div>;
+}
+
+/* ─── Skeletons ─────────────────────────────────────────────────── */
+function RoomSkeleton() {
+  return (
+    <div className="room-root">
+      <div className="skeleton" style={{ height: 220, borderRadius: 0, margin: 0 }} />
+      <div className="room-tabs">
+        {TABS.map(t => <div key={t} className="room-tab">{t}</div>)}
+      </div>
+      <div className="room-content">
+        {[1,2,3].map(i => (
+          <div key={i} className="card" style={{ marginBottom: 12 }}>
+            <div className="skeleton" style={{ height: 16, width: '40%', marginBottom: 12 }} />
+            <div className="skeleton" style={{ height: 56, marginBottom: 12 }} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <div className="skeleton" style={{ height: 36, flex: 1 }} />
+              <div className="skeleton" style={{ height: 36, flex: 1 }} />
+              <div className="skeleton" style={{ height: 36, flex: 1 }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ResultsSkeleton() {
+  return (
+    <div>
+      {[1,2,3].map(i => (
+        <div key={i} className="card" style={{ marginBottom: 10 }}>
+          <div className="skeleton" style={{ height: 14, width: '30%', marginBottom: 10 }} />
+          <div className="skeleton" style={{ height: 20, marginBottom: 10 }} />
+          <div className="skeleton" style={{ height: 12, width: '50%' }} />
+        </div>
+      ))}
+    </div>
+  );
+}

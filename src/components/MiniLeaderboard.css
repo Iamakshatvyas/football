@@ -1,0 +1,85 @@
+/* =====================================================
+   MiniLeaderboard.css
+   ===================================================== */
+
+.mini-lb {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mini-lb-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--bg-elevated);
+  border: 0.5px solid var(--border-default);
+  border-radius: var(--radius-md);
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+.mini-lb-row:hover { background: var(--bg-surface); }
+
+.mini-lb-row--you {
+  background: var(--color-orange-subtle);
+  border-color: var(--border-accent);
+}
+
+.mini-lb-rank {
+  width: 22px;
+  text-align: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.mini-lb-rank-num {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.mini-lb-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-orange-subtle);
+  color: var(--text-accent);
+  border: 0.5px solid var(--border-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.mini-lb-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.mini-lb-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.mini-lb-pts {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-accent);
+}
+
+.mini-lb-acc {
+  font-size: 10px;
+  color: var(--text-muted);
+}
