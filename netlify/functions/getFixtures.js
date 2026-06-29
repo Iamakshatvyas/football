@@ -20,7 +20,7 @@ exports.handler = async () => {
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Headers": "Content-Type",
-        "Content-Type": "application/json",
+        "Content-Type": "application/json",`r`n        "Cache-Control": "no-store, max-age=0",
       },
       body: JSON.stringify(response.data),
     };
@@ -35,7 +35,7 @@ exports.handler = async () => {
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Headers": "Content-Type",
-        "Content-Type": "application/json",
+        "Content-Type": "application/json",`r`n        "Cache-Control": "no-store, max-age=0",
       },
       body: JSON.stringify({
         success: false,

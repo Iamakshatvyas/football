@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import "./PredictionCard.css";
 
+const LIVE_STATUSES = ["LIVE", "1H", "HT", "2H", "ET", "BT", "P"];
+
 function formatKickoff(dateStr) {
   if (!dateStr) return "";
 
@@ -20,6 +22,25 @@ function formatKickoff(dateStr) {
     day: "numeric",
     month: "short",
   })} - ${time}`;
+}
+
+function getMatchStatus(fixture) {
+  const short = fixture?.fixture?.status?.short;
+  const elapsed = fixture?.fixture?.status?.elapsed;
+  const isLive = LIVE_STATUSES.includes(short);
+  const isFinished = short === "FT";
+  const isUpcoming = short === "NS";
+
+  if (isLive) {
+    if (short === "HT") return { short, isLive, isFinished, isUpcoming, label: "Half time" };
+    if (short === "ET") return { short, isLive, isFinished, isUpcoming, label: `${elapsed ?? ""}' ET` };
+    if (short === "P") return { short, isLive, isFinished, isUpcoming, label: "Penalties" };
+    return { short, isLive, isFinished, isUpcoming, label: elapsed ? `${elapsed}'` : "Live now" };
+  }
+
+  if (isFinished) return { short, isLive, isFinished, isUpcoming, label: "Finished" };
+  if (isUpcoming) return { short, isLive, isFinished, isUpcoming, label: formatKickoff(fixture?.fixture?.date) };
+  return { short, isLive, isFinished, isUpcoming, label: short || "Match" };
 }
 
 function TeamLogo({ team, size = 52 }) {
@@ -55,8 +76,18 @@ function TeamLogo({ team, size = 52 }) {
   );
 }
 
-function isLocked(date) {
-  return new Date(date) <= new Date();
+function getGoals(fixture) {
+  return {
+    home: fixture?.goals?.home ?? fixture?.score?.fullTime?.home ?? 0,
+    away: fixture?.goals?.away ?? fixture?.score?.fullTime?.away ?? 0,
+  };
+}
+
+function isLocked(fixture) {
+  const status = getMatchStatus(fixture);
+  const kickoff = fixture?.fixture?.date ? new Date(fixture.fixture.date) : null;
+
+  return status.isLive || status.isFinished || (kickoff ? kickoff <= new Date() : false);
 }
 
 function getInitialScore(winner, currentHomeGoals = 0, currentAwayGoals = 0) {
@@ -80,6 +111,12 @@ function getScoreWinner(homeGoals, awayGoals) {
   return null;
 }
 
+function getWinnerLabel(winner, homeName, awayName) {
+  if (winner === "home") return homeName;
+  if (winner === "away") return awayName;
+  return "No pick";
+}
+
 export default function PredictionCard({
   fixture,
   selected,
@@ -90,8 +127,9 @@ export default function PredictionCard({
   const fixtureId = fixture?.fixture?.id;
   const home = fixture?.teams?.home;
   const away = fixture?.teams?.away;
-  const kickoff = fixture?.fixture?.date;
-  const locked = isLocked(kickoff);
+  const status = getMatchStatus(fixture);
+  const locked = isLocked(fixture);
+  const goals = getGoals(fixture);
 
   const [selectedWinner, setSelectedWinner] = useState(null);
   const [homeGoals, setHomeGoals] = useState(0);
@@ -171,14 +209,19 @@ export default function PredictionCard({
     <article
       className={`pred-card ${selectedWinner ? "pred-card--predicted" : ""} ${
         locked ? "pred-card--locked" : ""
-      } ${isSaved ? "pred-card--saved" : ""} animate-fade-up`}
+      } ${status.isLive ? "pred-card--live" : ""} ${isSaved ? "pred-card--saved" : ""} animate-fade-up`}
       style={{ animationDelay: `${animationDelay}ms` }}
     >
       <div className="pred-header">
-        <span className="pred-deadline">{formatKickoff(kickoff)}</span>
+        <span className="pred-deadline">{status.label}</span>
         <div className="pred-header-right">
           {saving && <div className="pred-saving-dot" />}
-          {locked ? (
+          {status.isLive ? (
+            <span className="badge badge-live">
+              <span className="live-dot" />
+              LIVE
+            </span>
+          ) : locked ? (
             <span className="badge badge-muted">Locked</span>
           ) : isSaved ? (
             <span className="badge badge-success">Saved</span>
@@ -187,6 +230,14 @@ export default function PredictionCard({
           )}
         </div>
       </div>
+
+      {status.isLive && (
+        <div className="pred-live-score">
+          <span>{home?.name}</span>
+          <strong>{goals.home} - {goals.away}</strong>
+          <span>{away?.name}</span>
+        </div>
+      )}
 
       <div className="pred-teams-selector">
         <button
@@ -288,6 +339,21 @@ export default function PredictionCard({
               Pick a scoreline where your selected team wins.
             </div>
           )}
+        </div>
+      )}
+
+      {locked && selectedWinner && (
+        <div className="pred-locked-pick">
+          <span>Your prediction</span>
+          <strong>
+            {getWinnerLabel(selectedWinner, home?.name, away?.name)} - {homeGoals} : {awayGoals}
+          </strong>
+        </div>
+      )}
+
+      {locked && !selectedWinner && (
+        <div className="pred-locked-pick pred-locked-pick--empty">
+          Prediction closed after kickoff
         </div>
       )}
 

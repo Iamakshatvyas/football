@@ -66,7 +66,8 @@ export default function RoomPage() {
           (a, b) => new Date(a.fixture?.date) - new Date(b.fixture?.date)
         );
         const liveStatuses = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
-        const live = matches.find(f => liveStatuses.includes(f.fixture?.status?.short));
+        const liveMatches = matches.filter(f => liveStatuses.includes(f.fixture?.status?.short));
+        const live = liveMatches[0] || null;
         const upcoming = matches.filter(f => {
           const kickoff = new Date(f.fixture?.date);
           return (
@@ -79,10 +80,14 @@ export default function RoomPage() {
           const kickoff = new Date(f.fixture?.date);
           return f.fixture?.status?.short === 'NS' && kickoff >= now;
         });
+        const activeFixtures = [...liveMatches, ...upcoming].filter(
+          (fixture, index, allFixtures) =>
+            allFixtures.findIndex(f => f.fixture?.id === fixture.fixture?.id) === index
+        );
 
         setLiveMatch(live || null);
         setNextMatch(next || null);
-        setFixtures(upcoming);
+        setFixtures(activeFixtures);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -138,8 +143,9 @@ const handlePredict = useCallback(
   const heroPrediction = heroFixture ? predictions[heroFixture.fixture.id] : null;
 
   // ── Prediction count stats ──────────────────────────
-  const totalFixtures  = fixtures.length;
-  const predCount      = fixtures.filter(f => predictions[f.fixture.id]).length;
+  const openFixtures = fixtures.filter(f => f.fixture?.status?.short === 'NS' && new Date(f.fixture?.date) > new Date());
+  const totalFixtures  = openFixtures.length;
+  const predCount      = openFixtures.filter(f => predictions[f.fixture.id]).length;
 
   // ── Loading skeletons ────────────────────────────────
   if (loading) return <RoomSkeleton />;
@@ -182,13 +188,13 @@ const handlePredict = useCallback(
             {fixtures.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-state__icon">📅</div>
-                <div className="empty-state__title">No upcoming fixtures</div>
+                <div className="empty-state__title">No live or upcoming fixtures</div>
                 <div className="empty-state__subtitle">Check back soon — new matches will appear here automatically.</div>
               </div>
             ) : (
               <>
                 <p className="section-label" style={{ marginTop: 20 }}>
-                  Upcoming matches
+                  Live and upcoming matches
                 </p>
                 <div className="prediction-list">
                   {fixtures.map((fixture, i) => (
