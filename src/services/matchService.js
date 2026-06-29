@@ -1,7 +1,9 @@
-import axios from "axios";
+import { Capacitor } from "@capacitor/core";
 
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: Capacitor.isNativePlatform()
+    ? "https://footballtalks.netlify.app/.netlify/functions"
+    : "/api",
 });
 
 function statusMap(status) {
