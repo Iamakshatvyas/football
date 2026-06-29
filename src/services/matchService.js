@@ -1,3 +1,4 @@
+import axios from "axios";
 import { Capacitor } from "@capacitor/core";
 
 const api = axios.create({
