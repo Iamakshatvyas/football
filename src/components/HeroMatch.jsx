@@ -6,6 +6,7 @@ const LIVE_STATUSES = ["1H", "HT", "2H", "ET", "BT", "P", "LIVE"];
 function getStatusInfo(fixture) {
   const short = fixture?.fixture?.status?.short;
   const elapsed = fixture?.fixture?.status?.elapsed;
+  const updatedAt = formatUpdatedAt(fixture?.fixture?.status?.updatedAt);
   const isLive = LIVE_STATUSES.includes(short);
 
   if (isLive) {
@@ -13,7 +14,7 @@ function getStatusInfo(fixture) {
     if (short === "ET") return { label: `${elapsed ?? ""}' ET`, isLive: true };
     if (short === "P") return { label: "Penalties", isLive: true };
     return {
-      label: elapsed ? `${elapsed}'` : "Live now",
+      label: elapsed ? `${elapsed}'` : updatedAt ? `Live now - updated ${updatedAt}` : "Live now",
       isLive: true,
     };
   }
@@ -102,7 +103,16 @@ function winnerLabel(prediction, homeName, awayName) {
   return "Not picked";
 }
 
-export default function HeroMatch({ fixture, roomName, memberCount, userPrediction }) {
+function formatUpdatedAt(updatedAt) {
+  if (!updatedAt) return null;
+
+  return new Date(updatedAt).toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+export default function HeroMatch({ fixture, roomName, memberCount, userPrediction, onOpenRoomInfo }) {
   const statusInfo = fixture ? getStatusInfo(fixture) : null;
   const countdown = useCountdown(statusInfo?.kickoff);
 
@@ -132,14 +142,24 @@ export default function HeroMatch({ fixture, roomName, memberCount, userPredicti
           {memberCount > 0 && <span className="hero-member-count">{memberCount} members</span>}
         </div>
 
-        {isLive ? (
-          <div className="badge badge-live">
-            <span className="live-dot" />
-            LIVE
-          </div>
-        ) : isNS ? (
-          <div className="badge badge-muted">Next match</div>
-        ) : null}
+        <div className="hero-header-actions">
+          {isLive ? (
+            <div className="badge badge-live">
+              <span className="live-dot" />
+              LIVE
+            </div>
+          ) : isNS ? (
+            <div className="badge badge-muted">Next match</div>
+          ) : null}
+          <button
+            className="hero-menu-button"
+            type="button"
+            aria-label="Open room information"
+            onClick={onOpenRoomInfo}
+          >
+            ⋮
+          </button>
+        </div>
       </div>
 
       {fixture ? (

@@ -7,6 +7,7 @@ import {
   updateDoc,
   setDoc,
   arrayUnion,
+  arrayRemove,
   serverTimestamp,
   query,
   where,
@@ -131,4 +132,29 @@ export const getRoomMembers = async (roomId) => {
   if (!snap.exists()) return [];
 
   return snap.data().members || [];
+};
+
+export const leaveRoom = async (roomId, userId) => {
+  const roomRef = doc(db, 'rooms', roomId);
+  const roomSnap = await getDoc(roomRef);
+
+  if (!roomSnap.exists()) {
+    throw new Error('Room not found');
+  }
+
+  const members = roomSnap.data().members || [];
+  const nextMembers = members.filter((member) => member.uid !== userId);
+
+  await updateDoc(roomRef, {
+    members: nextMembers,
+    memberIds: arrayRemove(userId),
+  });
+
+  await setDoc(
+    doc(db, 'users', userId),
+    {
+      rooms: arrayRemove(roomId),
+    },
+    { merge: true }
+  );
 };

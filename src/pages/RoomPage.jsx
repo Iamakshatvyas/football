@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import { getRoom, getRoomMembers } from '../services/roomService';
+import { getRoom, getRoomMembers, leaveRoom } from '../services/roomService';
 import { getTournamentMatches } from '../services/matchService';
 import { getUserPredictions, savePrediction } from '../services/predictionService';
 import { getRoomLeaderboard } from '../services/leaderboardService';
@@ -9,12 +10,14 @@ import HeroMatch from '../components/HeroMatch';
 import PredictionCard from '../components/PredictionCard';
 import MiniLeaderboard from '../components/MiniLeaderboard';
 import ProgressCard from '../components/ProgressCard';
+import RoomInfoSheet from '../components/RoomInfoSheet';
 import './RoomPage.css';
 
 const TABS = ['Predict', 'Standings', 'Results', 'Members'];
 
 export default function RoomPage() {
   const { roomId } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
 
   const [room,        setRoom]        = useState(null);
@@ -27,6 +30,7 @@ export default function RoomPage() {
   const [tab,         setTab]         = useState('Predict');
   const [loading,     setLoading]     = useState(true);
   const [saving,      setSaving]      = useState({});
+  const [infoOpen,    setInfoOpen]    = useState(false);
 
   // ── Load all room data ──────────────────────────────
   useEffect(() => {
@@ -66,15 +70,6 @@ export default function RoomPage() {
         const matches = (fixtureData || []).slice().sort(
           (a, b) => new Date(a.fixture?.date) - new Date(b.fixture?.date)
         );
-        console.table(
-  matches.map((m) => ({
-    home: m.teams.home.name,
-    away: m.teams.away.name,
-    status: m.fixture.status.short,
-    date: m.fixture.date,
-    updated: m.fixture.status.updatedAt,
-  }))
-);
         const liveStatuses = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
         const liveMatches = matches.filter(f => liveStatuses.includes(f.fixture?.status?.short));
         const live = liveMatches[0] || null;
@@ -155,6 +150,17 @@ const handlePredict = useCallback(
   [user, roomId]
 );
 
+  const handleLeaveRoom = useCallback(async () => {
+    try {
+      await leaveRoom(roomId, user.uid);
+      toast.success('You left the room');
+      navigate('/');
+    } catch (error) {
+      console.error('Leave room failed:', error);
+      toast.error('Could not leave room');
+    }
+  }, [navigate, roomId, user]);
+
   // ── Hero fixture = live first, then next upcoming ──
   const heroFixture = liveMatch || nextMatch;
   const heroPrediction = heroFixture ? predictions[heroFixture.fixture.id] : null;
@@ -175,6 +181,15 @@ const handlePredict = useCallback(
         roomName={room?.name}
         memberCount={members.length}
         userPrediction={heroPrediction}
+        onOpenRoomInfo={() => setInfoOpen(true)}
+      />
+
+      <RoomInfoSheet
+        open={infoOpen}
+        room={room}
+        members={members}
+        onClose={() => setInfoOpen(false)}
+        onLeaveRoom={handleLeaveRoom}
       />
 
       {/* ── Tab bar ── */}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { joinRoom } from '../services/roomService';
 import toast from 'react-hot-toast';
@@ -8,7 +8,8 @@ import './CreateJoinPage.css';
 export default function JoinRoomPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [code, setCode] = useState('');
+  const { code: routeCode } = useParams();
+  const [code, setCode] = useState(routeCode?.toUpperCase() || '');
   const [loading, setLoading] = useState(false);
 
   const handleJoin = async (e) => {

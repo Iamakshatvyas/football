@@ -43,6 +43,7 @@ export default function App() {
             <Route path="/room/:roomId"  element={<RoomPage />} />
             <Route path="/create"        element={<CreateRoomPage />} />
             <Route path="/join"          element={<JoinRoomPage />} />
+            <Route path="/join/:code"    element={<JoinRoomPage />} />
             <Route path="/profile"       element={<ProfilePage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
