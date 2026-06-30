@@ -1,4 +1,6 @@
-const admin = require("firebase-admin");
+const { initializeApp, cert, getApps } = require("firebase-admin/app");
+const { getFirestore } = require("firebase-admin/firestore");
+const { getMessaging } = require("firebase-admin/messaging");
 
 const projectId = process.env.FIREBASE_PROJECT_ID;
 const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
@@ -18,9 +20,9 @@ if (!privateKey) {
   throw new Error("FIREBASE_PRIVATE_KEY is missing");
 }
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
+if (getApps().length === 0) {
+  initializeApp({
+    credential: cert({
       projectId,
       clientEmail,
       privateKey,
@@ -30,11 +32,10 @@ if (!admin.apps.length) {
   console.log("Firebase Admin initialized");
 }
 
-const db = admin.firestore();
-const messaging = admin.messaging();
+const db = getFirestore();
+const messaging = getMessaging();
 
 module.exports = {
-  admin,
   db,
   messaging,
 };
