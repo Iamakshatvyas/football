@@ -2,14 +2,26 @@ const { messaging, db } = require("./firebaseAdmin");
 
 exports.handler = async (event) => {
   try {
-    const body = JSON.parse(event.body);
+    console.log("Method:", event.httpMethod);
+    console.log("Headers:", event.headers);
+    console.log("Raw body:", event.body);
+
+    if (!event.body) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          success: false,
+          error: "Request body is empty",
+        }),
+      };
+    }
 
     const {
       userId,
       title,
       body: message,
       data = {},
-    } = body;
+    } = JSON.parse(event.body);
 
     const userDoc = await db.collection("users").doc(userId).get();
 
@@ -18,7 +30,7 @@ exports.handler = async (event) => {
         statusCode: 404,
         body: JSON.stringify({
           success: false,
-          message: "User not found",
+          error: "User not found",
         }),
       };
     }
@@ -30,19 +42,17 @@ exports.handler = async (event) => {
         statusCode: 400,
         body: JSON.stringify({
           success: false,
-          message: "User has no FCM token",
+          error: "User has no FCM token",
         }),
       };
     }
 
-    await messaging.send({
+    const response = await messaging.send({
       token,
-
       notification: {
         title,
         body: message,
       },
-
       data,
     });
 
@@ -50,16 +60,18 @@ exports.handler = async (event) => {
       statusCode: 200,
       body: JSON.stringify({
         success: true,
+        messageId: response,
       }),
     };
   } catch (err) {
-    console.error(err);
+    console.error("SEND ERROR:", err);
 
     return {
       statusCode: 500,
       body: JSON.stringify({
         success: false,
         error: err.message,
+        stack: err.stack,
       }),
     };
   }
